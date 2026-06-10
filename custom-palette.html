@@ -1,0 +1,98 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Custom Palette - Indie Art Lab</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<link rel="stylesheet" href="assets/css/site.css" />
+		<link rel="stylesheet" href="assets/css/art-prototype.css?v=2" />
+	</head>
+	<body class="is-preload">
+		<div id="wrapper">
+			<div id="main">
+				<div class="inner">
+					<header id="header">
+						<a href="index.html" class="logo"><strong>Indie Art Lab</strong> Custom Palette</a>
+					</header>
+
+					<section>
+						<header class="major">
+							<h2>커스텀 팔레트 생성</h2>
+						</header>
+						<p>직접 색상을 추가/수정하거나 이미지에서 자동 추출한 색으로 팔레트를 만든 뒤 저장하세요.</p>
+
+						<div class="art-tool-controls">
+							<div class="art-tool-field">
+								<label for="custom-palette-name">팔레트 이름</label>
+								<input id="custom-palette-name" type="text" value="My Palette" />
+							</div>
+							<div class="art-tool-field">
+								<label for="custom-image-upload">이미지에서 색상 불러오기</label>
+								<input id="custom-image-upload" type="file" accept="image/*" />
+							</div>
+							<div class="art-tool-field art-tool-range">
+								<label for="custom-dedupe-strength">유사 색상 중복 방지 <span id="custom-dedupe-label">높음</span></label>
+								<input id="custom-dedupe-strength" type="range" min="0" max="300" value="90" />
+							</div>
+							<div class="art-tool-field">
+								<label for="custom-color-count">추출 색상 개수</label>
+								<select id="custom-color-count"></select>
+							</div>
+						</div>
+
+						<div class="art-tool-actions">
+							<button id="extract-custom-colors" type="button" class="button small">이미지 색상 추출</button>
+							<button id="add-custom-color" type="button" class="button small">색상 추가</button>
+							<button id="remove-custom-color" type="button" class="button small">색상 제거</button>
+							<button id="save-custom-palette" type="button" class="button small">팔레트 저장</button>
+						</div>
+
+						<div id="custom-palette-colors" class="art-tool-editor-colors"></div>
+						<div id="custom-selected-editor" class="key-color-list">
+							<div class="key-color-row">
+								<span class="key-color-label">원본</span>
+								<span id="custom-selected-source-swatch" class="key-color-swatch" style="background-color:#ff0000"></span>
+								<span class="key-color-arrow">-></span>
+								<span class="key-color-label">변경</span>
+								<input id="custom-selected-color-input" type="color" value="#ff0000" />
+								<input id="custom-selected-hex-input" type="text" value="FF0000" maxlength="6" placeholder="RRGGBB" />
+								<span class="key-color-status">편집중</span>
+							</div>
+						</div>
+						<p id="custom-palette-status" class="key-color-label"></p>
+
+						<hr class="major" />
+						<h3>저장된 커스텀 팔레트</h3>
+						<div id="saved-custom-palettes" class="art-tool-compare-grid"></div>
+					</section>
+				</div>
+			</div>
+
+			<div id="sidebar">
+				<div class="inner">
+					<nav id="menu">
+						<header class="major"><h2>Menu</h2></header>
+						<ul>
+							<li><a href="index.html">메인 허브</a></li>
+							<li><a href="color-replace.html">색상 대체</a></li>
+							<li><a href="custom-palette.html">커스텀 팔레트</a></li>
+							<li><a href="launch-feedback.html">출시 알림/피드백</a></li>
+						</ul>
+					</nav>
+				</div>
+			</div>
+		</div>
+
+		<script src="assets/js/jquery.min.js"></script>
+		<script src="assets/js/browser.min.js"></script>
+		<script src="assets/js/breakpoints.min.js"></script>
+		<script src="assets/js/util.js"></script>
+		<script src="assets/js/main.js"></script>
+		<script src="assets/js/menu-active.js"></script>
+		<script src="assets/js/palette-store.js"></script>
+		<script src="assets/js/color-extraction.js?v=5"></script>
+		<script src="assets/js/custom-palette.js?v=9"></script>
+		<script src="assets/js/visitors.js"></script>
+	</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE HTML>
+<!--
+	Editorial by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>Palette Tool - Indie Art Lab</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<link rel="stylesheet" href="assets/css/site.css" />
+		<link rel="stylesheet" href="assets/css/art-prototype.css" />
+	</head>
+	<body class="is-preload">
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+
+							<!-- Header -->
+								<header id="header">
+									<a href="index.html" class="logo"><strong>Indie Art Lab</strong> Palette Tool</a>
+								</header>
+
+							<section id="gradient-prototype">
+								<header class="major">
+									<h2>Gradient Map Tool</h2>
+								</header>
+								<p>이미지를 업로드하고 팔레트를 적용해 아트 톤을 빠르게 검증하세요.</p>
+
+								<div class="art-tool-controls">
+									<div class="art-tool-field">
+										<label for="image-upload">이미지 업로드</label>
+										<input id="image-upload" type="file" accept="image/*" />
+									</div>
+									<div class="art-tool-field">
+										<label for="palette-select">팔레트</label>
+										<select id="palette-select"></select>
+									</div>
+									<div class="art-tool-field art-tool-range">
+										<label for="mix-range">적용 강도 <span id="mix-value">100%</span></label>
+										<input id="mix-range" type="range" min="0" max="100" value="100" />
+									</div>
+								</div>
+
+								<div class="art-tool-actions">
+									<button id="download-mapped" type="button" class="button small">결과 PNG 다운로드</button>
+									<button id="toggle-compare" type="button" class="button small">전체 팔레트 비교 보기</button>
+									<button id="reset-palettes" type="button" class="button small">기본 팔레트로 초기화</button>
+								</div>
+
+								<div id="palette-editor" class="art-tool-editor">
+									<h3>팔레트 편집</h3>
+									<div id="palette-editor-colors" class="art-tool-editor-colors"></div>
+									<div class="art-tool-actions">
+										<button id="add-palette-color" type="button" class="button small">색상 추가</button>
+										<button id="remove-palette-color" type="button" class="button small">색상 제거</button>
+									</div>
+								</div>
+
+								<div class="art-tool-grid">
+									<div class="art-tool-panel">
+										<h3>원본</h3>
+										<canvas id="original-canvas" width="640" height="360"></canvas>
+									</div>
+									<div class="art-tool-panel">
+										<h3>그라디언트 적용</h3>
+										<canvas id="mapped-canvas" width="640" height="360"></canvas>
+									</div>
+								</div>
+
+								<div class="art-tool-swatches" id="palette-swatches"></div>
+								<div id="palette-compare" class="art-tool-compare-grid hidden"></div>
+							</section>
+
+						</div>
+					</div>
+
+				<!-- Sidebar -->
+					<div id="sidebar">
+						<div class="inner">
+
+							<!-- Menu -->
+								<nav id="menu">
+									<header class="major">
+										<h2>Menu</h2>
+									</header>
+									<ul>
+										<li><a href="index.html">메인 허브</a></li>
+										<li><a href="color-replace.html">색상 대체</a></li>
+										<li><a href="custom-palette.html">커스텀 팔레트</a></li>
+									</ul>
+								</nav>
+
+						</div>
+					</div>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+			<script src="assets/js/menu-active.js"></script>
+			<script src="assets/js/palette-store.js"></script>
+			<script src="assets/js/gradient-map.js"></script>
+			<script src="assets/js/visitors.js"></script>
+
+	</body>
+</html>
