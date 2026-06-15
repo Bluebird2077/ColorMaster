@@ -25,7 +25,7 @@
 	// Stops animations/transitions until the page has ...
 
 		// ... loaded.
-			$window.on('load', function() {
+			$(function() {
 				window.setTimeout(function() {
 					$body.removeClass('is-preload');
 				}, 100);
@@ -258,5 +258,94 @@
 				});
 
 			});
+
+	// Real User Upload Tracking
+	var realUserTracker = (function() {
+		var ADDR_SCRIPT = 'https://script.google.com/macros/s/AKfycbx3cNvyZVPIC9jqIJ8BmU5PUq_uvkZcgfx5ybre6A6hJWR4thRVT5CLuysdQi_kZBwVrQ/exec';
+		var TABLE_NAME = 'real_user';
+		var USER_COOKIE_KEY = 'user';
+
+		function getCookieValue(name) {
+			var value = '; ' + document.cookie;
+			var parts = value.split('; ' + name + '=');
+			if (parts.length === 2) {
+				return parts.pop().split(';').shift();
+			}
+			return '';
+		}
+
+		function getUserId() {
+			var existingHash = getCookieValue(USER_COOKIE_KEY);
+			if (existingHash) {
+				return existingHash;
+			}
+			var hash = Math.random().toString(36).substring(2, 8).toUpperCase();
+			var date = new Date();
+			date.setTime(date.getTime() + 180 * 24 * 60 * 60 * 1000);
+			document.cookie = USER_COOKIE_KEY + '=' + hash + '; expires=' + date.toUTCString() + '; path=/';
+			return hash;
+		}
+
+		function pad2(n) { return n < 10 ? '0' + n : String(n); }
+		function formatTimestamp(d) {
+			return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()) + ' '
+				+ pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ':' + pad2(d.getSeconds());
+		}
+
+		return function() {
+			var currentPagePath = window.location.pathname;
+			var sentKey = 'real_user_sent_upload_' + currentPagePath;
+
+			console.log('[real_user] 트래커 실행됨. 현재 페이지:', currentPagePath);
+
+			if (localStorage.getItem(sentKey) === '1') {
+				console.log('[real_user] 이미 전송된 기록이 있어 스킵합니다.');
+				return;
+			}
+
+			var uid = getUserId();
+			var payload = {
+				id: uid,
+				time_stamp: formatTimestamp(new Date()),
+				page: currentPagePath,
+				"page ": currentPagePath, // 구글 시트 오타(띄어쓰기) 대응
+				" page": currentPagePath,
+				" page ": currentPagePath
+			};
+
+			var data = JSON.stringify(payload);
+			var url = ADDR_SCRIPT + '?action=insert&table=' + encodeURIComponent(TABLE_NAME) + '&data=' + encodeURIComponent(data);
+
+			console.log('[real_user] 서버로 데이터 전송 시작...', payload);
+
+			$.ajax({
+				url: url,
+				dataType: 'jsonp',
+				timeout: 8000,
+				success: function (res) {
+					console.log('[real_user] 응답 수신:', res);
+					if (res && res.success === true) {
+						console.log('[real_user] 업로드 기록 완료 (' + currentPagePath + ')');
+						localStorage.setItem(sentKey, '1');
+					} else {
+						console.error('[real_user] 서버에서 실패 응답을 보냈습니다:', res);
+					}
+				},
+				error: function (xhr, status, err) {
+					console.error('[real_user] AJAX 요청 실패:', status, err);
+				}
+			});
+		};
+	})();
+
+	$(document).on('change', 'input[type="file"]', function(e) {
+		var id = $(this).attr('id');
+		if (id === 'custom-image-upload' || id === 'replace-image-upload' || id === 'assistant-image-upload') {
+			if (e.target.files && e.target.files.length > 0) {
+				console.log('[real_user] 파일 선택 감지됨:', e.target.files[0].name);
+				realUserTracker();
+			}
+		}
+	});
 
 })(jQuery);

@@ -1,0 +1,186 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>캐릭터 색상 추천 - Indie Art Lab</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<link rel="stylesheet" href="assets/css/site.css" />
+		<link rel="stylesheet" href="assets/css/art-prototype.css?v=2" />
+		<!-- chroma.js 추가 -->
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js"></script>
+	</head>
+	<body class="is-preload">
+		<div id="wrapper">
+			<div id="main">
+				<div class="inner">
+					<header id="header">
+						<a href="index.html" class="logo"><strong>Indie Art Lab</strong> Character Color Assistant</a>
+					</header>
+
+					<section>
+						<header class="major">
+							<h2>캐릭터 색상 추천</h2>
+						</header>
+						<p>업로드한 캐릭터 이미지에서 색상을 추출하고, 피부, 머리, 의상(이너/아우터) 등 구체적인 부위를 지정하여 캐릭터에 특화된 색상 조화 및 대비 추천을 받아보세요.</p>
+
+						<!-- 이미지 업로드 및 추출 UI -->
+						<div class="art-tool-controls" style="margin-bottom: 2em; background: rgba(230, 235, 237, 0.25); padding: 1.5em; border-radius: 8px;">
+							<div class="art-tool-field">
+								<label for="assistant-image-upload">캐릭터 이미지 업로드 (색상 자동 추출)</label>
+								<input id="assistant-image-upload" type="file" accept="image/*" />
+							</div>
+							<div class="art-tool-field">
+								<label for="assistant-color-count">추출 색상 개수</label>
+								<select id="assistant-color-count"></select>
+							</div>
+							<div class="art-tool-field art-tool-range">
+								<label for="assistant-dedupe-strength">유사 색상 중복 방지 <span id="assistant-dedupe-label">높음</span></label>
+								<input id="assistant-dedupe-strength" type="range" min="0" max="300" value="90" />
+							</div>
+							<div class="art-tool-actions" style="margin-top: 1em;">
+								<button id="assistant-extract-btn" class="button small">업로드된 이미지에서 색상 추출</button>
+							</div>
+						</div>
+
+						<!-- 추출된 색상 오버뷰 -->
+						<div id="assistant-overview" style="display:none; margin-bottom:2em; padding:1.5em; background:rgba(230,235,237,0.5); border-radius:8px;">
+							<h3>추출된 색상 분류 (캐릭터 부위)</h3>
+							<p style="font-size:0.9em; color:#555;">추출된 색상이 캐릭터의 어느 부위(피부, 머리, 이너, 아우터 등)에 해당하는지 선택하세요.</p>
+							<div id="assistant-overview-swatches" style="display:flex; gap:1.5em; flex-wrap:wrap;"></div>
+						</div>
+
+						<!-- 이미지 전후 비교 캔버스 -->
+						<div class="art-tool-grid" style="margin-bottom: 2em;">
+							<div class="art-tool-panel">
+								<h3>원본 이미지</h3>
+								<canvas id="assistant-original-canvas" width="600" height="600" style="background:#f0f0f0; border-radius:4px; max-width:100%; aspect-ratio: 1/1;"></canvas>
+							</div>
+							<div class="art-tool-panel">
+								<div class="art-tool-panel-head">
+									<h3>색상 치환 결과</h3>
+									<div class="art-tool-actions">
+										<button id="assistant-download-btn" class="button small">이미지 저장</button>
+									</div>
+								</div>
+								<canvas id="assistant-remap-canvas" width="600" height="600" style="background:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAMUlEQVQ4T2NkYGAQYcAP3uCTZhw1gGGYhAGxBBEZGNsO1gVwM4YxZBQg/Q9PZxhGwgBvtw/QkY18KwAAAABJRU5ErkJggg=='); border-radius:4px; max-width:100%; aspect-ratio: 1/1;"></canvas>
+							</div>
+						</div>
+
+						<!-- 컬러 슬롯 UI (동적 렌더링) -->
+						<div class="art-tool-grid" style="margin-bottom: 2em;">
+						</div>
+
+						<hr class="major" />
+
+						<!-- 자동 랜덤 조합 생성 -->
+						<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1em;">
+							<h3 style="margin:0;">자동 랜덤 팔레트 생성</h3>
+							<button id="toggle-random-panel-btn" class="button small">패널 열기/닫기</button>
+						</div>
+						<div id="random-palette-panel" style="display:block;">
+							<p style="font-size: 0.9em; color:#555;">피부색 등 고정된 파트를 기준으로 다른 부위의 색상들을 추천받아 완전히 새로운 캐릭터 배색 조합을 무작위로 생성합니다.</p>
+							<div class="art-tool-controls" style="margin-bottom: 2em; background: rgba(230, 235, 237, 0.4); padding: 1.5em; border-radius: 8px; display:flex; align-items:flex-end; gap: 1em;">
+								<div class="art-tool-field" style="margin:0;">
+									<label for="random-palette-count" style="margin-bottom:0.5em;">생성 개수</label>
+									<select id="random-palette-count" style="width:120px;">
+										<option value="5">5개</option>
+										<option value="10" selected>10개</option>
+										<option value="15">15개</option>
+										<option value="20">20개</option>
+									</select>
+								</div>
+								<div class="art-tool-actions" style="margin:0;">
+									<button id="generate-random-palettes-btn" class="button primary small">팔레트 랜덤 생성</button>
+								</div>
+							</div>
+							<div id="random-palettes-container" style="display:flex; gap: 1.5em; flex-wrap:wrap; margin-bottom: 2em;"></div>
+						</div>
+
+						<hr class="major" />
+
+						<!-- 개별 색상 직접 지정 슬롯 -->
+						<h3>색상 직접 지정 및 추천</h3>
+						<p style="font-size: 0.9em; color:#555;">각 부위별 색상을 직접 수정하거나, 캐릭터 디자인(예: 이너/아우터 대비)에 특화된 대체 색상을 추천받으세요.</p>
+						<div id="assistant-slots-container" style="display:flex; gap: 1.5em; flex-wrap: wrap; margin-bottom: 2em;">
+							<!-- JS 동적 생성 -->
+						</div>
+
+						<!-- 추천 패널 -->
+						<div id="recommendation-panel" style="display:none; margin-bottom: 2em; padding: 1.5em; background: rgba(230, 235, 237, 0.4); border-radius: 8px;">
+							<div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 1em; flex-wrap: wrap; gap: 1em;">
+								<h3 id="rec-target-name" style="margin:0;">부위별 대체 색상 추천</h3>
+								<div style="display:flex; align-items:center; gap: 1em;">
+									<div class="art-tool-field art-tool-range" style="margin:0; width: 200px;">
+										<label for="rec-dedupe-strength" style="margin-bottom:0.2em; font-size:0.8em;">유사 색상 중복 방지 <span id="rec-dedupe-label">중간</span></label>
+										<input id="rec-dedupe-strength" type="range" min="0" max="300" value="100" />
+									</div>
+									<button class="button small" onclick="$('#recommendation-panel').slideUp();">닫기</button>
+								</div>
+							</div>
+							
+							<div style="display:flex; flex-wrap:wrap; gap: 2em;">
+								<div style="flex: 1; min-width: 300px;">
+									<p style="font-size:0.85em; color:#666; margin-bottom: 1.5em;" id="rec-desc">메인 컬러와 전체 색상 조합을 분석하여 가장 조화로운 색상을 추천합니다.</p>
+									
+									<h4 style="font-size:0.9em; margin-bottom:0.5em;">조화/블렌딩 (Analogous & Mix)</h4>
+									<div id="rec-analogous" style="display:flex; gap: 0.5em; flex-wrap: wrap; margin-bottom: 1.5em;"></div>
+
+									<h4 style="font-size:0.9em; margin-bottom:0.5em;">톤 매칭 (Tone Adjust)</h4>
+									<div id="rec-tone" style="display:flex; gap: 0.5em; flex-wrap: wrap; margin-bottom: 1.5em;"></div>
+
+									<h4 style="font-size:0.9em; margin-bottom:0.5em;">대비 보색 포인트 (Complementary)</h4>
+									<div id="rec-complementary" style="display:flex; gap: 0.5em; flex-wrap: wrap; margin-bottom: 1.5em;"></div>
+
+									<h4 style="font-size:0.9em; margin-bottom:0.5em;">다각/엑센트 배색 (Triadic & Tetradic)</h4>
+									<div id="rec-accent" style="display:flex; gap: 0.5em; flex-wrap: wrap;"></div>
+
+									<!-- 캐릭터 특화 추천 영역 (동적 표시) -->
+									<div id="rec-character-specific-container" style="display:none; margin-top: 2em; padding-top: 1.5em; border-top: 1px dashed #ccc;">
+										<h4 id="rec-character-title" style="font-size:0.9em; margin-bottom:0.5em; color: #d84b7d;">✨ 캐릭터 특화 추천</h4>
+										<p id="rec-character-desc" style="font-size:0.8em; color:#777; margin-bottom: 1em;"></p>
+										<div id="rec-character-specific" style="display:flex; gap: 0.5em; flex-wrap: wrap;"></div>
+									</div>
+								</div>
+								
+								<div style="width: 300px; text-align: center;">
+									<h4 style="font-size:0.9em; margin-bottom:0.5em;">실시간 미리보기</h4>
+									<canvas id="assistant-rec-preview-canvas" width="600" height="600" style="background:url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAMUlEQVQ4T2NkYGAQYcAP3uCTZhw1gGGYhAGxBBEZGNsO1gVwM4YxZBQg/Q9PZxhGwgBvtw/QkY18KwAAAABJRU5ErkJggg=='); border-radius:4px; width: 100%; height: auto; max-width: 300px; border: 1px solid #ccc; aspect-ratio: 1/1;"></canvas>
+									<p style="font-size:0.75em; color:#888; margin-top: 0.5em;">추천 색상을 클릭하면 바로 반영됩니다.</p>
+								</div>
+							</div>
+						</div>
+
+					</section>
+				</div>
+			</div>
+
+			<div id="sidebar">
+				<div class="inner">
+					<nav id="menu">
+						<header class="major"><h2>Menu</h2></header>
+						<ul>
+										<li><a href="index.html">메인 허브</a></li>
+										<li><a href="color-assistant.html">색상 추천</a></li>
+										<li><a href="color-assistant-character.html">캐릭터 색상 추천</a></li>
+										<li><a href="color-replace.html">색상 대체</a></li>
+										<li><a href="custom-palette.html">커스텀 팔레트</a></li>
+										<li><a href="launch-feedback.html">출시 알림/피드백</a></li>
+									</ul>
+					</nav>
+				</div>
+			</div>
+		</div>
+
+		<script src="assets/js/jquery.min.js"></script>
+		<script src="assets/js/browser.min.js"></script>
+		<script src="assets/js/breakpoints.min.js"></script>
+		<script src="assets/js/util.js"></script>
+		<script src="assets/js/main.js"></script>
+		<script src="assets/js/menu-active.js"></script>
+		<!-- 색상 추출 JS 추가 -->
+		<script src="assets/js/color-extraction.js?v=5"></script>
+		<script src="assets/js/color-assistant-character.js"></script>
+		<script src="assets/js/visitors.js"></script>
+	</body>
+</html>

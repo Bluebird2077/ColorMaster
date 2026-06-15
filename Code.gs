@@ -88,6 +88,24 @@ function Insert(request, table, db) {
       sendMail(data.email);
     }
 
+    // 중복 전송 방지: 최근 20개의 행을 확인하여 동일한 id와 time_stamp가 있는지 검사
+    var allData = table.getDataRange().getValues();
+    if (allData.length > 1) {
+      var idIdx = headers.indexOf('id');
+      var tsIdx = headers.indexOf('time_stamp');
+      if (idIdx !== -1 && tsIdx !== -1) {
+        var startIndex = Math.max(1, allData.length - 20);
+        for (var i = startIndex; i < allData.length; i++) {
+          if (allData[i][idIdx] == data.id && allData[i][tsIdx] == data.time_stamp) {
+            result.success = true;
+            result.data = data;
+            result.meta = buildMeta(db, table);
+            return result; // 중복이므로 추가하지 않고 성공 반환
+          }
+        }
+      }
+    }
+
     var newRow = prepareRow(data, headers);
     table.appendRow(newRow);
 

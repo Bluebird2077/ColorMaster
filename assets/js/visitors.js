@@ -86,23 +86,9 @@
 	}
 
 	function upsertDebugBadge(text, ok) {
-		var badge = document.getElementById('visitors-debug-badge');
-		if (!badge) {
-			badge = document.createElement('div');
-			badge.id = 'visitors-debug-badge';
-			badge.style.position = 'fixed';
-			badge.style.right = '12px';
-			badge.style.bottom = '12px';
-			badge.style.zIndex = '99999';
-			badge.style.padding = '8px 10px';
-			badge.style.borderRadius = '6px';
-			badge.style.fontSize = '12px';
-			badge.style.fontFamily = 'monospace';
-			badge.style.color = '#fff';
-			document.body.appendChild(badge);
-		}
-		badge.style.background = ok ? 'rgba(25,135,84,.9)' : 'rgba(220,53,69,.9)';
-		badge.textContent = text;
+		// UI에 계속 남아있는 디버그 뱃지 생성 로직을 제거했습니다.
+		// 콘솔로만 상태를 로깅합니다.
+		console.log('[visitors badge log]', text, ok);
 	}
 
 	function logRecentRows(rows) {
@@ -179,6 +165,7 @@
 			success: function (res) {
 				if (res && res.success === true) {
 					console.log('[visitors] insert 응답 성공', res);
+					markSent(); // insert가 성공하면 즉시 전송 완료 처리하여 중복 방지
 					verifyInserted(payload.id);
 					return;
 				}
@@ -234,6 +221,12 @@
 			var url = buildUrl(data);
 
 			console.log('[visitors] 전송 payload', payload);
+			
+			// 전송을 시작하기 직전에 바로 세션에 전송 완료 마킹을 합니다.
+			// 이렇게 하면 AJAX 요청이 서버에 도달하기 전에 페이지를 이탈하여 pagehide가 발생했을 때
+			// fallback 이미지 비콘이 중복으로 전송되는 Race Condition을 막을 수 있습니다.
+			markSent();
+			
 			sendWithRetry(url, payload, 0);
 			sendFallbackOnPageHide(url);
 		});
